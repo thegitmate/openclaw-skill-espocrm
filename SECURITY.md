@@ -112,19 +112,9 @@ You can report issues by opening a private GitHub issue or contacting
 the maintainer directly.
 
 Please avoid public disclosure until the issue has been investigated.
-```
 
 ---
 
-```
-### 1. Install dependencies
-```bash
-sudo apt install python3-requests python3-dotenv
-```
-```
-
-Replace with:
-```
 ### 1. Install dependencies
 
 This skill requires only outbound HTTPS access to your configured EspoCRM
