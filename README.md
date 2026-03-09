@@ -3,7 +3,7 @@ _openclaw-skill-espocrm_
 
 OpenClaw skill to connect to EspoCRM and manage contacts, leads, accounts, tasks, and meetings.
 
-![Version](https://img.shields.io/badge/version-1.0.0-blue) 
+![Version](https://img.shields.io/badge/version-1.1.0-blue) 
 ![Status](https://img.shields.io/badge/status-stable-green)
 
 ---
