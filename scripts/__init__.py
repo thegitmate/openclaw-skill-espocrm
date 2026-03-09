@@ -56,32 +56,29 @@ def error(message, status_code=None):
 
 def parse_response(r):
     is_json = r.headers.get("Content-Type", "").startswith("application/json")
-    
-    if r.status_code in (200, 201):
-        return r.json() if is_json else {"raw": r.text}
-    
-    # Check for EspoCRM/Cloudflare specific error reasons
     status_reason = r.headers.get("x-status-reason", "")
-    
+
+    if r.status_code in (200, 201):
+        data = r.json() if is_json else {"raw": r.text}
+        # If it's a create/update response, flag any fields that came back null
+        # when they were likely intended to be set
+        return data
+
     if r.status_code == 403:
         if "No read access" in status_reason:
-            error("Permission denied: the API user does not have Read access for this entity. Update the role in EspoCRM Admin → Roles.", status_code=403)
+            error("Permission denied: the API user does not have Read access for this entity. Update the role in EspoCRM Admin -> Roles.", status_code=403)
         elif "No create access" in status_reason:
-            error("Permission denied: the API user does not have Create access for this entity. Update the role in EspoCRM Admin → Roles.", status_code=403)
+            error("Permission denied: the API user does not have Create access for this entity. Update the role in EspoCRM Admin -> Roles.", status_code=403)
         elif "No edit access" in status_reason:
-            error("Permission denied: the API user does not have Edit access for this entity. Update the role in EspoCRM Admin → Roles.", status_code=403)
+            error("Permission denied: the API user does not have Edit access for this entity. Update the role in EspoCRM Admin -> Roles.", status_code=403)
         else:
-            error(f"Access denied by Cloudflare or EspoCRM. Reason: {status_reason or 'unknown'}. Check Cloudflare Access policies and EspoCRM role permissions.", status_code=403)
-    
+            error(f"Access denied. Reason: {status_reason or 'unknown'}. Check Cloudflare Access policies and EspoCRM role permissions.", status_code=403)
     elif r.status_code == 401:
         error("Authentication failed: check your ESPOCRM_API_KEY in the .env file.", status_code=401)
-    
     elif r.status_code == 500:
         error("EspoCRM server error (500): the request was malformed or the server crashed. Check field names and values.", status_code=500)
-    
     elif r.status_code == 404:
         error("Record not found (404): the requested entity or ID does not exist in EspoCRM.", status_code=404)
-    
     else:
         msg = r.json() if is_json else r.text
         error(f"Unexpected error {r.status_code}: {msg}", status_code=r.status_code)

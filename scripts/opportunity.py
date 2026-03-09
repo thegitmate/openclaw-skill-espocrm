@@ -104,10 +104,59 @@ def delete_record(args):
     r = requests.delete(f"{api_url}/{ENTITY}/{record_id}", headers=headers(api_key, cf_id, cf_secret), timeout=10)
     success(parse_response(r))
 
+def link_record(args):
+    if len(args) < 3:
+        error("Usage: link <id> <relation> <related_id>")
+    record_id = args[0]
+    relation = args[1]
+    related_id = args[2]
+    api_url, api_key, cf_id, cf_secret = get_config()
+    payload = {"id": related_id}
+    r = requests.post(f"{api_url}/{ENTITY}/{record_id}/{relation}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
+    success(parse_response(r))
+
+def describe(args):
+    api_url, api_key, cf_id, cf_secret = get_config()
+    r = requests.get(f"{api_url}/Metadata", headers=headers(api_key, cf_id, cf_secret), timeout=10)
+    data = parse_response(r)
+    entity_fields = data.get("entityDefs", {}).get(ENTITY, {}).get("fields", {})
+    if not entity_fields:
+        error(f"No metadata found for entity: {ENTITY}")
+    result = {}
+    for field_name, field_def in entity_fields.items():
+        field_type = field_def.get("type")
+        entry = {"type": field_type}
+        if "options" in field_def:
+            entry["options"] = field_def["options"]
+        if field_def.get("required"):
+            entry["required"] = True
+        result[field_name] = entry
+    success(result)
+
+def create_record(args):
+    payload = {}
+    i = 0
+    while i < len(args):
+        if args[i].startswith("--") and i + 1 < len(args):
+            payload[args[i].lstrip("-")] = args[i+1]; i += 2
+        else:
+            i += 1
+    if not payload:
+        error("No fields provided. Use --name 'Acme Corp'")
+    api_url, api_key, cf_id, cf_secret = get_config()
+    r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
+    data = parse_response(r)
+    # Check which sent fields are missing or null in the response
+    ignored = [k for k, v in payload.items() if data.get(k) is None]
+    response = {"id": data.get("id"), "created": data.get("name") or data.get("id")}
+    if ignored:
+        response["warning"] = f"These fields were sent but came back null (may be invalid field names): {', '.join(ignored)}"
+    success(response)
+
 def main():
     args = sys.argv[1:]
     if not args:
-        error("Missing command: list | get | search | create | update | delete")
+        error("Missing command: list | get | search | create | update | delete | link | describe")
     cmd = args[0]
     rest = args[1:]
     try:
@@ -117,6 +166,8 @@ def main():
         elif cmd == "create": create_record(rest)
         elif cmd == "update": update_record(rest)
         elif cmd == "delete": delete_record(rest)
+        elif cmd == "link":   link_record(rest)
+        elif cmd == "describe": describe(rest)
         else: error(f"Unknown command: {cmd}")
     except requests.RequestException as e:
         error(str(e))

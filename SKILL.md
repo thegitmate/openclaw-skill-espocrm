@@ -9,7 +9,7 @@ description: >
   Doe", "add a new lead", "show me open tasks", "create a meeting for tomorrow",
   "look up the account Acme Corp", "add this person to the CRM".
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   author: "TheGitMate (Nate) - https://github.com/thegitmate"
 ---
 
@@ -170,6 +170,27 @@ python3 -m scripts.call delete
 python3 -m scripts.opportunity delete 
 ```
 
+### LINK -- associate two records together
+```bash
+python3 -m scripts.meeting link <meeting_id> contacts <contact_id>
+python3 -m scripts.meeting link <meeting_id> leads <lead_id>
+python3 -m scripts.call link <call_id> contacts <contact_id>
+python3 -m scripts.task link <task_id> contacts <contact_id>
+python3 -m scripts.opportunity link <opportunity_id> contacts <contact_id>
+python3 -m scripts.contact link <contact_id> meetings <meeting_id>
+```
+
+### DESCRIBE -- get all fields and valid options for an entity
+```bash
+python3 -m scripts.contact describe
+python3 -m scripts.lead describe
+python3 -m scripts.account describe
+python3 -m scripts.task describe
+python3 -m scripts.meeting describe
+python3 -m scripts.call describe
+python3 -m scripts.opportunity describe
+```
+
 ---
 
 ## Field reference
@@ -237,6 +258,8 @@ python3 -m scripts.opportunity delete
 - **On permission errors (403)**, tell the user exactly which permission needs to be updated in EspoCRM Admin → Roles.
 - **Before deleting any record**, always confirm with the user explicitly — show them the record first and ask for confirmation. Never deletes without explicit confirmation.
 - **Before updating a record**, fetch it first with `get` so you can show the user what will change.
+- **To link a contact to a meeting, call, or task**, use the link command after creating the record. Do not try to pass contactsIds in the create payload.
+- **Before setting a field value you are unsure about**, run describe on the entity first. This returns all fields including custom ones, their types, and for enum fields the list of valid options. Always use describe when the user mentions a field or value you have not seen before.
 
 ---
 
