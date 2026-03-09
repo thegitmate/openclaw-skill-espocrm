@@ -116,9 +116,6 @@ Please avoid public disclosure until the issue has been investigated.
 
 ---
 
-## 3 & 4 — Update the install instructions in `SKILL.md`
-
-Find this in your `SKILL.md`:
 ```
 ### 1. Install dependencies
 ```bash
