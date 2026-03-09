@@ -1,5 +1,10 @@
-# openclaw-skill-espocrm
+# EspoCRM Skill for OpenClaw
+_openclaw-skill-espocrm_
+
 OpenClaw skill to connect to EspoCRM and manage contacts, leads, accounts, tasks, and meetings.
+
+![Version](https://img.shields.io/badge/version-1.0.0-blue) 
+![Status](https://img.shields.io/badge/status-stable-green)
 
 ---
 
@@ -278,7 +283,9 @@ Issues and improvements are welcome.
 
 GitHub repository:
 
-https://github.com/thegitmate/
+https://github.com/thegitmate/openclaw-skill-espocrm
+
+Initial creation: 9 March 2026
 
 ---
 
