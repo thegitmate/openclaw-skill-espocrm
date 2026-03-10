@@ -191,6 +191,19 @@ python3 -m scripts.call describe
 python3 -m scripts.opportunity describe
 ```
 
+### GENERIC -- use for any custom or unlisted entity
+```bash
+python3 -m scripts.generic <Entity> list
+python3 -m scripts.generic <Entity> get <id>
+python3 -m scripts.generic <Entity> search --FIELD VALUE
+python3 -m scripts.generic <Entity> create --FIELD VALUE
+python3 -m scripts.generic <Entity> update <id> --FIELD VALUE
+python3 -m scripts.generic <Entity> delete <id>
+python3 -m scripts.generic <Entity> link <id> <relation> <related_id>
+python3 -m scripts.generic <Entity> describe
+python3 -m scripts.generic list-entities
+```
+
 ---
 
 ## Field reference
@@ -260,6 +273,8 @@ python3 -m scripts.opportunity describe
 - **Before updating a record**, fetch it first with `get` so you can show the user what will change.
 - **To link a contact to a meeting, call, or task**, use the link command after creating the record. Do not try to pass contactsIds in the create payload.
 - **Before setting a field value you are unsure about**, run describe on the entity first. This returns all fields including custom ones, their types, and for enum fields the list of valid options. Always use describe when the user mentions a field or value you have not seen before.
+- **For custom entities** not listed above (e.g. Project, Invoice, or any entity you created in EspoCRM), always use scripts.generic with the exact entity name as it appears in EspoCRM (case-sensitive, e.g. "Project" not "project"). Run describe first to discover available fields.
+- **When unsure of an entity name**, always run list-entities first to get the exact case-sensitive name before using scripts.generic: python3 -m scripts.generic list-entities
 
 ---
 
