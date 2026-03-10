@@ -204,6 +204,21 @@ python3 -m scripts.generic <Entity> describe
 python3 -m scripts.generic list-entities
 ```
 
+### GET-LINKS -- list records related to a record via a relationship
+```bash
+python3 -m scripts.contact get-links <id> meetings
+python3 -m scripts.contact get-links <id> opportunities
+python3 -m scripts.meeting get-links <id> contacts
+python3 -m scripts.generic CProjects get-links <id> contacts
+python3 -m scripts.generic CProjects get-links <id> meetings
+```
+
+### LIST-RELATIONSHIPS -- discover all relationships for an entity
+```bash
+python3 -m scripts.contact list-relationships
+python3 -m scripts.generic CProjects list-relationships
+```
+
 ---
 
 ## Field reference
@@ -263,18 +278,58 @@ python3 -m scripts.generic list-entities
 
 ## Workflow guidelines
 
-- **Before creating a contact or lead**, always search first to avoid duplicates. Search by email if available, otherwise by name.
-- **If a record already exists**, tell the user and show the existing record instead of creating a duplicate.
-- **If required fields are missing** for a create operation, ask the user before running the script.
+### Creating records
+- **Before creating a contact or lead**, always search first to avoid duplicates.
+  Search by email if available, otherwise by name.
+- **If a record already exists**, tell the user and show the existing record
+  instead of creating a duplicate.
+- **If required fields are missing** for a create operation, ask the user
+  before running the script.
 - **Always confirm** with the user before creating any record.
-- **On error**, read the `message` field in the JSON response and explain it to the user in plain language.
-- **On permission errors (403)**, tell the user exactly which permission needs to be updated in EspoCRM Admin → Roles.
-- **Before deleting any record**, always confirm with the user explicitly — show them the record first and ask for confirmation. Never deletes without explicit confirmation.
-- **Before updating a record**, fetch it first with `get` so you can show the user what will change.
-- **To link a contact to a meeting, call, or task**, use the link command after creating the record. Do not try to pass contactsIds in the create payload.
-- **Before setting a field value you are unsure about**, run describe on the entity first. This returns all fields including custom ones, their types, and for enum fields the list of valid options. Always use describe when the user mentions a field or value you have not seen before.
-- **For custom entities** not listed above (e.g. Project, Invoice, or any entity you created in EspoCRM), always use scripts.generic with the exact entity name as it appears in EspoCRM (case-sensitive, e.g. "Project" not "project"). Run describe first to discover available fields.
-- **When unsure of an entity name**, always run list-entities first to get the exact case-sensitive name before using scripts.generic: python3 -m scripts.generic list-entities
+
+### Reading and navigating records
+- **When displaying a record's full details**, always follow up with get-links
+  for each hasMany or hasChildren relationship. Never assume a record has no
+  linked data without checking. Example flow for a project:
+  1. python3 -m scripts.generic CProjects get <id>
+  2. python3 -m scripts.generic CProjects list-relationships
+  3. python3 -m scripts.generic CProjects get-links <id> leads
+  4. python3 -m scripts.generic CProjects get-links <id> meetings
+  5. python3 -m scripts.generic CProjects get-links <id> tasks
+- **To find records linked to another record**, ALWAYS use get-links.
+  Never try to filter the related entity directly.
+  CORRECT: python3 -m scripts.generic CProjects get-links <id> leads
+  WRONG:   python3 -m scripts.lead list --where projectId <id>
+- **To find what relationships an entity has**, run list-relationships first.
+  This returns all link names and their target entities.
+
+### Updating and deleting records
+- **Before updating a record**, fetch it first with get so you can show
+  the user what will change.
+- **Before deleting any record**, always confirm with the user explicitly
+  — show them the record first and ask for confirmation. Never delete
+  without explicit user confirmation.
+
+### Fields and custom entities
+- **Before setting a field value you are unsure about**, run describe on
+  the entity first. This returns all fields including custom ones, their
+  types, and for enum fields the list of valid options. Always use describe
+  when the user mentions a field or value you have not seen before.
+- **When unsure of an entity name**, always run list-entities first:
+  python3 -m scripts.generic list-entities
+- **For custom entities** (anything not in the dedicated scripts), always
+  use scripts.generic with the exact case-sensitive entity name from
+  list-entities. Run describe first to discover available fields.
+- **To link records**, use the link command after creating the record.
+  Never try to pass relation IDs (e.g. contactsIds) in the create payload.
+
+### Errors
+- **On any error**, read the message field in the JSON response and explain
+  it to the user in plain language.
+- **On permission errors (403)**, tell the user exactly which permission
+  needs to be updated in EspoCRM Admin → Roles.
+- **On missing configuration**, tell the user to create or check the .env
+  file in the skill root directory.
 
 ---
 
