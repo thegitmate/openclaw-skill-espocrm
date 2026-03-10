@@ -152,10 +152,39 @@ def list_entities(args):
     entities = sorted(data.get("entityDefs", {}).keys())
     success(entities)
 
+def get_links(entity, args):
+    if len(args) < 2:
+        error("Usage: get-links <id> <relation>")
+    record_id = args[0]
+    relation = args[1]
+    api_url, api_key, cf_id, cf_secret = get_config()
+    params = {}
+    if len(args) > 2 and args[2] == "--limit":
+        params["maxSize"] = args[3]
+    r = requests.get(f"{api_url}/{entity}/{record_id}/{relation}", headers=headers(api_key, cf_id, cf_secret), params=params, timeout=10)
+    data = parse_response(r)
+    records = data.get("list", data)
+    success(records)
+
+def list_relationships(entity, args):
+    api_url, api_key, cf_id, cf_secret = get_config()
+    r = requests.get(f"{api_url}/Metadata", headers=headers(api_key, cf_id, cf_secret), timeout=10)
+    data = parse_response(r)
+    links = data.get("entityDefs", {}).get(entity, {}).get("links", {})
+    if not links:
+        error(f"No relationships found for entity: {entity}")
+    result = {}
+    for link_name, link_def in links.items():
+        result[link_name] = {
+            "type": link_def.get("type"),
+            "entity": link_def.get("entity")
+        }
+    success(result)
+
 def main():
     args = sys.argv[1:]
     if not args:
-        error("Usage: python3 -m scripts.generic <Entity> <command> [args]\nOr: python3 -m scripts.generic list-entities\nCommands: list | get | search | create | update | delete | link | describe")
+        error("Usage: python3 -m scripts.generic <Entity> <command> [args]\nOr: python3 -m scripts.generic list-entities\nCommands: list | get | search | create | update | delete | link | get-links | list-relationships | describe")
 
     # Special command that doesn't need an entity name
     if args[0] == "list-entities":
@@ -178,6 +207,8 @@ def main():
         elif cmd == "delete":    delete_record(entity, rest)
         elif cmd == "link":      link_record(entity, rest)
         elif cmd == "describe":  describe(entity, rest)
+        elif cmd == "get-links":          get_links(entity, rest)
+        elif cmd == "list-relationships": list_relationships(entity, rest)
         else: error(f"Unknown command: {cmd}")
     except requests.RequestException as e:
         error(str(e))

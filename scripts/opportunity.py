@@ -153,10 +153,39 @@ def create_record(args):
         response["warning"] = f"These fields were sent but came back null (may be invalid field names): {', '.join(ignored)}"
     success(response)
 
+def get_links(args):
+    if len(args) < 2:
+        error("Usage: get-links <id> <relation>")
+    record_id = args[0]
+    relation = args[1]
+    api_url, api_key, cf_id, cf_secret = get_config()
+    params = {}
+    if len(args) > 2 and args[2] == "--limit":
+        params["maxSize"] = args[3]
+    r = requests.get(f"{api_url}/{ENTITY}/{record_id}/{relation}", headers=headers(api_key, cf_id, cf_secret), params=params, timeout=10)
+    data = parse_response(r)
+    records = data.get("list", data)
+    success(records)
+
+def list_relationships(args):
+    api_url, api_key, cf_id, cf_secret = get_config()
+    r = requests.get(f"{api_url}/Metadata", headers=headers(api_key, cf_id, cf_secret), timeout=10)
+    data = parse_response(r)
+    links = data.get("entityDefs", {}).get(ENTITY, {}).get("links", {})
+    if not links:
+        error(f"No relationships found for entity: {ENTITY}")
+    result = {}
+    for link_name, link_def in links.items():
+        result[link_name] = {
+            "type": link_def.get("type"),
+            "entity": link_def.get("entity")
+        }
+    success(result)
+
 def main():
     args = sys.argv[1:]
     if not args:
-        error("Missing command: list | get | search | create | update | delete | link | describe")
+        error("Missing command: list | get | search | create | update | delete | link | get-links | list-relationships | describe")
     cmd = args[0]
     rest = args[1:]
     try:
@@ -168,6 +197,8 @@ def main():
         elif cmd == "delete": delete_record(rest)
         elif cmd == "link":   link_record(rest)
         elif cmd == "describe": describe(rest)
+        elif cmd == "get-links":          get_links(rest)
+        elif cmd == "list-relationships": list_relationships(rest)
         else: error(f"Unknown command: {cmd}")
     except requests.RequestException as e:
         error(str(e))
