@@ -12,7 +12,7 @@ OpenClaw skill to connect to EspoCRM and manage contacts, leads, accounts, tasks
 
 Connect OpenClaw to your EspoCRM instance to manage CRM data directly from the agent.
 
-This skill allows OpenClaw to list, search, view, create, update, and delete CRM records such as contacts, leads, accounts, tasks, and meetings.
+This skill allows OpenClaw to list, search, view, create, update, and delete CRM records such as contacts, leads, accounts, tasks, and meetings. Now also support custom entities and fields.
 
 All communication with EspoCRM is handled through local Python scripts that call the EspoCRM REST API.
 
