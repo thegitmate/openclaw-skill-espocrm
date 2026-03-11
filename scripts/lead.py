@@ -11,7 +11,7 @@ Usage:
 
 import sys
 import requests
-from . import get_config, headers, success, error, parse_response
+from . import get_config, headers, success, error, parse_response, clean_payload
 
 ENTITY = "Lead"
 SUMMARY_FIELDS = ["id", "firstName", "lastName", "emailAddress", "phoneNumber", "accountName", "status", "source", "city", "country"]
@@ -74,6 +74,7 @@ def create_record(args):
     if not payload:
         error("No fields provided. Use --firstName John --lastName Doe --emailAddress john@example.com")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     success(parse_response(r))
 
@@ -91,6 +92,7 @@ def update_record(args):
     if not payload:
         error("No fields provided. Use --firstName John --lastName Doe etc.")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.put(f"{api_url}/{ENTITY}/{record_id}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     success(parse_response(r))
 

@@ -23,7 +23,7 @@ Examples:
 
 import sys
 import requests
-from . import get_config, headers, success, error, parse_response
+from . import get_config, headers, success, error, parse_response, clean_payload
 
 def list_records(entity, args):
     api_url, api_key, cf_id, cf_secret = get_config()
@@ -83,6 +83,7 @@ def create_record(entity, args):
     if not payload:
         error(f"No fields provided. Use --fieldName value")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.post(f"{api_url}/{entity}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     data = parse_response(r)
     ignored = [k for k, v in payload.items() if data.get(k) is None]
@@ -105,6 +106,7 @@ def update_record(entity, args):
     if not payload:
         error("No fields provided.")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.put(f"{api_url}/{entity}/{record_id}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     success(parse_response(r))
 

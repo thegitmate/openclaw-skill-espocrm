@@ -13,7 +13,7 @@ Usage:
 
 import sys
 import requests
-from . import get_config, headers, success, error, parse_response
+from . import get_config, headers, success, error, parse_response, clean_payload
 
 ENTITY = "Call"
 SUMMARY_FIELDS = ["id", "name", "status", "dateStart", "dateEnd", "duration", "direction", "assignedUserName", "parentType", "parentName"]
@@ -64,20 +64,6 @@ def search_records(args):
     data = parse_response(r)
     records = data.get("list", [])
     success([{f: rec.get(f) for f in SUMMARY_FIELDS} for rec in records])
-
-def create_record(args):
-    payload = {}
-    i = 0
-    while i < len(args):
-        if args[i].startswith("--") and i + 1 < len(args):
-            payload[args[i].lstrip("-")] = args[i+1]; i += 2
-        else:
-            i += 1
-    if not payload:
-        error("No fields provided. Use --name 'Call name' --dateStart '2025-12-01 10:00:00'")
-    api_url, api_key, cf_id, cf_secret = get_config()
-    r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
-    success(parse_response(r))
 
 def update_record(args):
     if not args:
@@ -144,26 +130,7 @@ def create_record(args):
     if not payload:
         error("No fields provided. Use --name 'Acme Corp'")
     api_url, api_key, cf_id, cf_secret = get_config()
-    r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
-    data = parse_response(r)
-    # Check which sent fields are missing or null in the response
-    ignored = [k for k, v in payload.items() if data.get(k) is None]
-    response = {"id": data.get("id"), "created": data.get("name") or data.get("id")}
-    if ignored:
-        response["warning"] = f"These fields were sent but came back null (may be invalid field names): {', '.join(ignored)}"
-    success(response)
-
-def create_record(args):
-    payload = {}
-    i = 0
-    while i < len(args):
-        if args[i].startswith("--") and i + 1 < len(args):
-            payload[args[i].lstrip("-")] = args[i+1]; i += 2
-        else:
-            i += 1
-    if not payload:
-        error("No fields provided. Use --name 'Acme Corp'")
-    api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     data = parse_response(r)
     # Check which sent fields are missing or null in the response

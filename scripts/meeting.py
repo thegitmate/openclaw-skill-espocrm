@@ -11,7 +11,7 @@ Usage:
 
 import sys
 import requests
-from . import get_config, headers, success, error, parse_response
+from . import get_config, headers, success, error, parse_response, clean_payload
 
 ENTITY = "Meeting"
 SUMMARY_FIELDS = ["id", "name", "status", "dateStart", "dateEnd", "duration", "assignedUserName", "parentType", "parentName"]
@@ -91,6 +91,7 @@ def update_record(args):
     if not payload:
         error("No fields provided. Use --firstName John --lastName Doe etc.")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.put(f"{api_url}/{ENTITY}/{record_id}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     success(parse_response(r))
 
@@ -142,6 +143,7 @@ def create_record(args):
     if not payload:
         error("No fields provided. Use --name 'Acme Corp'")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     data = parse_response(r)
     # Check which sent fields are missing or null in the response

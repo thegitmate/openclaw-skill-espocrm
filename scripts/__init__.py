@@ -54,6 +54,15 @@ def error(message, status_code=None):
     print(json.dumps(out))
     sys.exit(1)
 
+def clean_payload(payload):
+    result = {}
+    for k, v in payload.items():
+        if isinstance(v, str):
+            # Handle both escaped \\n and literal \n sequences
+            v = v.encode('raw_unicode_escape').decode('unicode_escape')
+        result[k] = v
+    return result
+
 def parse_response(r):
     is_json = r.headers.get("Content-Type", "").startswith("application/json")
     status_reason = r.headers.get("x-status-reason", "")

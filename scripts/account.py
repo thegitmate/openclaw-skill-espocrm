@@ -11,7 +11,7 @@ Usage:
 
 import sys
 import requests
-from . import get_config, headers, success, error, parse_response
+from . import get_config, headers, success, error, parse_response, clean_payload
 
 ENTITY = "Account"
 SUMMARY_FIELDS = ["id", "name", "emailAddress", "phoneNumber", "website", "industry", "type", "city", "country"]
@@ -74,6 +74,7 @@ def create_record(args):
     if not payload:
         error("No fields provided. Use --name 'Acme Corp'")
     api_url, api_key, cf_id, cf_secret = get_config()
+    payload = clean_payload(payload)
     r = requests.post(f"{api_url}/{ENTITY}", json=payload, headers=headers(api_key, cf_id, cf_secret), timeout=10)
     success(parse_response(r))
 
